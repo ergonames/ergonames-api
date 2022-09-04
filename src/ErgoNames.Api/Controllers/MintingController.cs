@@ -21,7 +21,7 @@ public class MintingController : ControllerBase
     /// Pushes message with minting request box id to the minting queue
     /// </summary>
     [HttpPost("enqueueRequest")]
-    public async Task EnqueueRequest([FromBody]EnqueueMintingRequest payload)
+    public async Task<IActionResult> EnqueueRequest([FromBody]ProcessMintingRequest payload)
     {
         var mintingQueueUrl = config["MintingQueueUrl"];
         var serializerOptions = new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
@@ -31,6 +31,7 @@ public class MintingController : ControllerBase
         {
             Console.WriteLine($"Sending message [{message}] to queue [{mintingQueueUrl}]");
             var response = await sqsClient.SendMessageAsync(mintingQueueUrl, message);
+            return Ok(new { messageId = response.MessageId });
         }
         catch (System.Exception)
         {
