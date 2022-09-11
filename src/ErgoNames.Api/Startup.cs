@@ -39,6 +39,8 @@ public class Startup
 
         app.UseAuthorization();
 
+        app.UseCors(policy => policy.AllowAnyOrigin());
+
         app.UseEndpoints(endpoints =>
         {
             endpoints.MapControllers();
