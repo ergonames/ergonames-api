@@ -1,0 +1,20 @@
+FROM public.ecr.aws/lambda/dotnet:6 AS base
+
+FROM mcr.microsoft.com/dotnet/sdk:6.0-bullseye-slim AS build
+WORKDIR /src
+
+COPY ["src/ErgoNames.Api/ErgoNames.Api.csproj", "src/ErgoNames.Api/"]
+RUN dotnet restore "src/ErgoNames.Api/ErgoNames.Api.csproj"
+
+COPY . .
+RUN dotnet publish "src/ErgoNames.Api/ErgoNames.Api.csproj" \
+            --configuration Release \ 
+            --runtime linux-x64 \
+            --self-contained false \ 
+            --output /app/publish \
+            -p:PublishReadyToRun=true
+
+FROM base AS final
+WORKDIR /var/task
+COPY --from=build /app/publish .
+CMD ["ErgoNames.Api::ErgoNames.Api.LambdaEntryPoint::FunctionHandlerAsync"]
